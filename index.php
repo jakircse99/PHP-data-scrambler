@@ -1,3 +1,41 @@
+<?php 
+    include_once "functions.php";
+    $task = $_GET['task'] ?? 'encode';
+
+    $mainKey = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    $key = '';
+
+    // Generate key
+    if('key' == $task) {
+        $key = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        $arrayKey = str_split($key);
+        shuffle($arrayKey);
+        $key = join('', $arrayKey); 
+    } else if(isset($_REQUEST['key']) && $_REQUEST['key'] !='') {
+        $key = $_REQUEST['key'];
+    }
+
+    // Encryption
+    $encryptedData = '';
+    if('encode' == $task) {
+        if(isset($_POST['text']) && $_POST['text'] != '') {
+            $text = $_POST['text'];
+            $encryptedData = encryptData($text,$key);
+        }
+    }
+
+    // Decryption
+    $decryptedData = '';
+    if('decode' == $task) {
+        if(isset($_POST['text']) && $_POST['text'] != '') {
+            $text = $_POST['text'];
+            $decryptedData = decryptData($text,$key);
+        }
+    }
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -39,23 +77,35 @@
 
         <div class="row">
             <div class="column column-50 column-offset-20 nav">
-                <a href="/?task=encode"><button>Encode</button></a>
-                <a href="/?task=decode"><button>Decode</button></a>
+                <a href="/?task=encode&key=<?php echo $key; ?>"><button>Encode</button></a>
+                <a href="/?task=decode&key=<?php echo $key; ?>"><button>Decode</button></a>
                 <a href="/?task=key"><button>Generate key</button></a>
             </div>
         </div>
-
+        
         <div class="row form-container">
             <div class="column column-50 column-offset-20">
-                <form action="" method="POST">
+                <?php if('encode' == $task || 'key' == $task): ?>
+                <form action="./index.php" method="POST">
                     <label for="key">Generated key</label>
-                    <input type="text" name="key" id="key" readonly>
+                    <input type="text" name="key" id="key" value="<?php echo $key ?>" readonly>
                     <label for="text">Plain text</label>
-                    <textarea name="text" id="text" cols="30" rows="10"></textarea>
+                    <textarea name="text" id="text" cols="30" rows="10"><?php if(isset($_POST['text'])) echo $_POST['text'] ?></textarea>
                     <label for="encrdata">Encrypted data </label>
-                    <textarea name="encrdata" id="encrdata" cols="30" rows="10" readonly></textarea>
+                    <textarea name="encrdata" id="encrdata" cols="30" rows="10" ><?php echo $encryptedData ?></textarea>
                     <input type="submit" value="submit">
                 </form>
+                <?php else: ?>
+                    <form action="./index.php?task=decode" method="POST">
+                    <label for="key">Generated key</label>
+                    <input type="text" name="key" id="key" value="<?php echo $key ?>" readonly>
+                    <label for="text">Encrypted data</label>
+                    <textarea name="text" id="text" cols="30" rows="10"><?php if(isset($_POST['text'])) echo $_POST['text'] ?></textarea>
+                    <label for="decrdata">Plain text </label>
+                    <textarea name="decrdata" id="decrdata" cols="30" rows="10" ><?php echo $decryptedData ?></textarea>
+                    <input type="submit" value="submit">
+                </form>
+                <?php endif; ?>
             </div>
         </div>
     </div>
